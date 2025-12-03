@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookmarkAPI, categoryAPI } from '../services/api';
 import BookmarkCard from '../components/BookmarkCard';
+import AddBookmarkModal from '../components/AddBookmarkModal';
 
 function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
@@ -202,21 +203,12 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Add Bookmark Modal Placeholder */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold mb-4">Add Bookmark</h3>
-            <p className="text-gray-600 mb-4">Modal content coming soon...</p>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Add Bookmark Modal */}
+      <AddBookmarkModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }
