@@ -5,6 +5,7 @@ import BookmarkCard from '../components/BookmarkCard';
 import AddBookmarkModal from '../components/AddBookmarkModal';
 import EditBookmarkModal from '../components/EditBookmarkModal';
 import AddCategoryModal from '../components/AddCategoryModal';
+import EditCategoryModal from '../components/EditCategoryModal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 import { BookmarkSkeletonGrid } from '../components/BookmarkSkeleton';
@@ -18,8 +19,10 @@ function Dashboard() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [deletingBookmarkId, setDeletingBookmarkId] = useState(null);
   const [deletingCategoryId, setDeletingCategoryId] = useState(null);
   const [confirmModalType, setConfirmModalType] = useState('bookmark'); // 'bookmark' 또는 'category'
@@ -118,6 +121,11 @@ function Dashboard() {
   const handleEditBookmark = (bookmark) => {
     setEditingBookmark(bookmark);
     setShowEditModal(true);
+  };
+
+  const handleEditCategory = (category) => {
+    setEditingCategory(category);
+    setShowEditCategoryModal(true);
   };
 
   const filteredBookmarks = selectedCategory
@@ -226,23 +234,37 @@ function Dashboard() {
                       className="w-full text-left"
                     >
                       {category.name}
-                      <span className="float-right text-gray-500 mr-6">
+                      <span className="float-right text-gray-500 mr-12">
                         {bookmarks.filter((b) => b.category?.id === category.id).length}
                       </span>
                     </button>
-                    {/* 삭제 버튼 - hover 시 표시 */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCategory(category.id);
-                      }}
-                      className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
-                      title="Delete Category"
-                    >
-                      <svg className="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    {/* 수정 및 삭제 버튼 - hover 시 표시 */}
+                    <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCategory(category);
+                        }}
+                        className="p-1 hover:bg-blue-100 rounded transition-all"
+                        title="Edit Category"
+                      >
+                        <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCategory(category.id);
+                        }}
+                        className="p-1 hover:bg-red-100 rounded transition-all"
+                        title="Delete Category"
+                      >
+                        <svg className="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </nav>
@@ -315,6 +337,20 @@ function Dashboard() {
           fetchData();
           setToast({ isVisible: true, message: '카테고리가 추가되었습니다.', type: 'success' });
         }}
+      />
+
+      {/* Edit Category Modal */}
+      <EditCategoryModal
+        isOpen={showEditCategoryModal}
+        onClose={() => {
+          setShowEditCategoryModal(false);
+          setEditingCategory(null);
+        }}
+        onSuccess={() => {
+          fetchData();
+          setToast({ isVisible: true, message: '카테고리가 수정되었습니다.', type: 'success' });
+        }}
+        category={editingCategory}
       />
 
       {/* Delete Confirm Modal */}
