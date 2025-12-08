@@ -57,6 +57,8 @@ export const bookmarkAPI = {
   },
   delete: (id) => api.delete(`/bookmarks/${id}`),
   search: (keyword) => api.get(`/bookmarks/search?keyword=${encodeURIComponent(keyword)}`),
+  // AI 분석 API - URL 콘텐츠를 AI로 분석하여 제목, 설명, 태그 추출
+  analyzeUrl: (url) => api.post('/bookmarks/analyze', { url }),
 };
 
 // Category API

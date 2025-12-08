@@ -11,6 +11,7 @@ function AddBookmarkModal({ isOpen, onClose, onSuccess }) {
   });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -45,6 +46,35 @@ function AddBookmarkModal({ isOpen, onClose, onSuccess }) {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleAnalyzeUrl = async () => {
+    if (!formData.url) {
+      setError('URL을 먼저 입력해주세요.');
+      return;
+    }
+
+    setAnalyzing(true);
+    setError('');
+
+    try {
+      const response = await bookmarkAPI.analyzeUrl(formData.url);
+      const { title, description, tags, suggestedCategory } = response.data;
+
+      // AI 분석 결과를 폼에 자동 채우기
+      setFormData((prev) => ({
+        ...prev,
+        title: title || prev.title,
+        description: description || prev.description,
+        tags: tags ? tags.join(', ') : prev.tags,
+        categoryId: suggestedCategory || prev.categoryId,
+      }));
+    } catch (err) {
+      console.error('AI 분석 실패:', err);
+      setError(err.response?.data?.message || 'AI 분석에 실패했습니다. 수동으로 입력해주세요.');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -117,16 +147,42 @@ function AddBookmarkModal({ isOpen, onClose, onSuccess }) {
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
               URL <span className="text-red-500">*</span>
             </label>
-            <input
-              id="url"
-              type="url"
-              name="url"
-              value={formData.url}
-              onChange={handleChange}
-              required
-              placeholder="https://example.com/article"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
-            />
+            <div className="flex gap-2">
+              <input
+                id="url"
+                type="url"
+                name="url"
+                value={formData.url}
+                onChange={handleChange}
+                required
+                placeholder="https://example.com/article"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAnalyzeUrl}
+                disabled={analyzing || !formData.url}
+                className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+              >
+                {analyzing ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    분석 중...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    AI 분석
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">AI가 자동으로 제목, 설명, 태그를 추출합니다</p>
           </div>
 
           {/* Title */}
